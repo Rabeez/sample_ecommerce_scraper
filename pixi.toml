@@ -10,6 +10,7 @@ nvim = "nvim"
 catalog = "python catalog.py"
 items = "python items.py"
 process = "python process.py"
+images = "python images.py"
 
 [dependencies]
 python = "3.12.*"

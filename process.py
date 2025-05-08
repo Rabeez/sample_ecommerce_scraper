@@ -10,6 +10,7 @@ def main() -> None:
     OUTPUT_FILE.unlink(missing_ok=True)
 
     main_df = pl.read_parquet(INPUT_FILE)
+    main_df = main_df.drop("image_urls")
 
     unique_keys = set()
     for row in main_df["details"]:
@@ -20,6 +21,7 @@ def main() -> None:
 
     unpack_exprs = [pl.col("details").struct.field(key).alias(key) for key in unique_keys]
     df_unpacked = main_df.select(
+        pl.col("id"),
         pl.col("url"),
         pl.col("title"),
         pl.col("category"),

@@ -19,8 +19,10 @@ Execute these commands *in order*:
 pixi run catalog
 pixi run items --num 100
 pixi run process
+pixi run images
 ```
 
 1. `catalog` fetches item URLs for a predefined number of pages
 1. `items` fetches item-level details for specified number of pages (if `--nums` is omitted, all items are processed). Resulting DataFrame is stored as a parquet file.
 1. `process` converts the nested `polars` DataFrame into a flat CSV file
+1. `images` processes extracted URLs for preview images, downloads them, and places them in `data/images/{item_uuid}/*`

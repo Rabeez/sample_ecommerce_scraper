@@ -1,12 +1,22 @@
 import argparse
 import html
+import os
 import sys
+import uuid
 from pathlib import Path
+from urllib.parse import urljoin
 
 import httpx
 import polars as pl
+from dotenv import load_dotenv
 from selectolax.parser import HTMLParser
 from tqdm import tqdm
+
+load_dotenv()
+
+
+URL_ROOT = os.getenv("URL_ROOT")
+assert URL_ROOT
 
 CATALOG_PATH = Path("data/catalog.txt")
 OUTPUT_FILE = Path("data/items.parquet")
@@ -79,6 +89,18 @@ def main(num: int | None) -> None:
         except ValueError:
             raise ValueError(f"Item category not found: {url}") from None
 
+        image_urls = []
+        image_menu = tree.css_first("#imagemenu > ul:nth-child(1)")
+        if not image_menu:
+            raise ValueError(f"No #imagemenu > ul:nth-child(1) found for {url}")
+        for a_tag in image_menu.css("li > a:nth-child(1)"):
+            img_tag = a_tag.css_first("img:nth-child(1)")
+            if img_tag and "src" in img_tag.attributes:
+                img_url = img_tag.attributes["src"]
+                if URL_ROOT and img_url:
+                    img_url = urljoin(URL_ROOT, img_url)
+                    image_urls.append(img_url)
+
         try:
             details_text = grab_text(tree, ".canshu > div:nth-child(2)")
         except ValueError:
@@ -87,9 +109,11 @@ def main(num: int | None) -> None:
 
         products.append(
             {
+                "id": str(uuid.uuid4()),
                 "url": url,
                 "title": title,
                 "category": category,
+                "image_urls": image_urls,
                 "details": details,
             },
         )
